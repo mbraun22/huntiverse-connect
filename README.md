@@ -4,6 +4,26 @@
 
 **URL**: https://lovable.dev/projects/de210be8-6446-4118-bb65-0df53d3b4fc7
 
+## Deployment Setup
+
+To set up this project for deployment:
+
+1. Make the setup script executable:
+```bash
+chmod +x scripts/setup.sh
+```
+
+2. Run the setup script:
+```bash
+./scripts/setup.sh
+```
+
+The script will:
+- Check for required dependencies
+- Install project dependencies
+- Build the application
+- Provide guidance for server configuration
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
@@ -67,3 +87,4 @@ Simply open [Lovable](https://lovable.dev/projects/de210be8-6446-4118-bb65-0df53
 ## I want to use a custom domain - is that possible?
 
 We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+
