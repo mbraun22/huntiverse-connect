@@ -18,19 +18,48 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.origin,
-        },
+      // First, check if the user exists
+      const { data: { users }, error: searchError } = await supabase.auth.admin.listUsers({
+        filters: {
+          email: email
+        }
       });
 
-      if (error) throw error;
+      if (searchError) throw searchError;
 
-      toast({
-        title: "Magic link sent!",
-        description: "Please check your email for the login link.",
-      });
+      if (!users || users.length === 0) {
+        // New user - create account and sign in automatically
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          options: {
+            emailRedirectTo: window.location.origin,
+          }
+        });
+
+        if (signUpError) throw signUpError;
+
+        toast({
+          title: "Welcome!",
+          description: "Your account has been created and you're now signed in.",
+        });
+        
+        navigate("/dashboard");
+      } else {
+        // Existing user - send magic link
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: window.location.origin,
+          },
+        });
+
+        if (otpError) throw otpError;
+
+        toast({
+          title: "Magic link sent!",
+          description: "Please check your email for the login link.",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -68,12 +97,12 @@ const Login = () => {
               className="w-full bg-orange-600 hover:bg-orange-700"
               disabled={isLoading}
             >
-              {isLoading ? "Sending magic link..." : "Get Magic Link"}
+              {isLoading ? "Processing..." : "Continue with Email"}
             </Button>
             <p className="text-sm text-center text-muted-foreground mt-4">
-              We'll send you a magic link to sign in to your account.
+              First time? You'll be automatically signed in.
               <br />
-              No password required!
+              Returning? We'll send you a magic link!
             </p>
           </form>
         </CardContent>
