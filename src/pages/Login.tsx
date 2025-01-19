@@ -18,19 +18,22 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // First, check if the user exists
-      const { data: { users }, error: searchError } = await supabase.auth.admin.listUsers({
-        filters: {
-          email: email
-        }
+      // Try to sign in with OTP first
+      const { error: signInError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
       });
 
-      if (searchError) throw searchError;
-
-      if (!users || users.length === 0) {
-        // New user - create account and sign in automatically
+      if (signInError?.message.includes("Email not confirmed")) {
+        // If email not confirmed, it means this is a new user
+        // Generate a random password (it won't be used since we're using magic links)
+        const randomPassword = Math.random().toString(36).slice(-12);
+        
         const { error: signUpError } = await supabase.auth.signUp({
           email,
+          password: randomPassword,
           options: {
             emailRedirectTo: window.location.origin,
           }
@@ -44,17 +47,9 @@ const Login = () => {
         });
         
         navigate("/dashboard");
+      } else if (signInError) {
+        throw signInError;
       } else {
-        // Existing user - send magic link
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: window.location.origin,
-          },
-        });
-
-        if (otpError) throw otpError;
-
         toast({
           title: "Magic link sent!",
           description: "Please check your email for the login link.",
