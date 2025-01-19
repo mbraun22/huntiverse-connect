@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,9 +25,9 @@ const Login = () => {
         },
       });
 
-      if (signInError?.message.includes("Email not confirmed")) {
-        // If email not confirmed, it means this is a new user
-        // Generate a random password (it won't be used since we're using magic links)
+      // Check for the specific error that indicates a non-existent user
+      if (signInError?.message.includes("User not found")) {
+        // This is a new user - create account and sign in automatically
         const randomPassword = Math.random().toString(36).slice(-12);
         
         const { error: signUpError } = await supabase.auth.signUp({
